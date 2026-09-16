@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Node / frontend
+node_modules/
+dist/
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets and local settings
+.env
+.env.local
+
+# Editors and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
