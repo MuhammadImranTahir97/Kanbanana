@@ -18,4 +18,22 @@ Built for Homework 2 of the [AI Dev Tools Zoomcamp](https://github.com/DataTalks
 
 ## How to run
 
+### Backend
+
+```powershell
+cd backend
+uv run uvicorn app.main:app --reload
+```
+
+The API is served at http://localhost:8000, with all endpoints under `/api` (e.g. http://localhost:8000/api/cards). It currently uses an in-memory mock store, so data resets whenever the server restarts. The API contract is documented in [`_docs/openapi.yaml`](_docs/openapi.yaml).
+
+### Backend tests
+
+```powershell
+cd backend
+uv run pytest
+```
+
+### Frontend
+
 _Coming soon. This section will be filled in as the app is built._

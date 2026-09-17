@@ -1,0 +1,164 @@
+openapi: 3.0.3
+info:
+  title: Kanbanana API
+  description: API for the Kanbanana Kanban board (single shared board, no login).
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000/api
+
+paths:
+  /cards:
+    get:
+      summary: List all cards
+      operationId: listCards
+      responses:
+        "200":
+          description: Cards sorted by creation time, oldest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Card"
+    post:
+      summary: Create a card
+      description: New cards are always created in the "todo" status.
+      operationId: createCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CardCreate"
+      responses:
+        "201":
+          description: Card created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Card"
+        "422":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+
+  /cards/{card_id}:
+    patch:
+      summary: Update a card
+      description: Change title, description and/or status. Only the given fields are changed.
+      operationId: updateCard
+      parameters:
+        - $ref: "#/components/parameters/CardId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CardUpdate"
+      responses:
+        "200":
+          description: Card updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Card"
+        "404":
+          description: Card not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPError"
+        "422":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPValidationError"
+    delete:
+      summary: Delete a card
+      operationId: deleteCard
+      parameters:
+        - $ref: "#/components/parameters/CardId"
+      responses:
+        "204":
+          description: Card deleted.
+        "404":
+          description: Card not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HTTPError"
+
+components:
+  parameters:
+    CardId:
+      name: card_id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    Status:
+      type: string
+      enum: [todo, in_progress, done]
+
+    Card:
+      type: object
+      required: [id, title, description, status, created_at]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: "#/components/schemas/Status"
+        created_at:
+          type: string
+          format: date-time
+
+    CardCreate:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Cannot be empty or only whitespace.
+        description:
+          type: string
+          maxLength: 1000
+          default: ""
+
+    CardUpdate:
+      type: object
+      description: All fields optional; only provided fields are changed.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 1000
+        status:
+          $ref: "#/components/schemas/Status"
+
+    HTTPError:
+      type: object
+      properties:
+        detail:
+          type: string
+
+    HTTPValidationError:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
