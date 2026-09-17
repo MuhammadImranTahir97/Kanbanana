@@ -27,7 +27,7 @@ cd backend
 uv run uvicorn app.main:app --reload
 ```
 
-The API is served at http://localhost:8000, with all endpoints under `/api` (e.g. http://localhost:8000/api/cards). It currently uses an in-memory mock store, so data resets whenever the server restarts. The API contract is documented in [`_docs/openapi.yaml`](_docs/openapi.yaml).
+The API is served at http://localhost:8000, with all endpoints under `/api` (e.g. http://localhost:8000/api/cards). Cards are stored in a SQLite database file at `backend/kanbanana.db`, created automatically the first time the server starts. The API contract is documented in [`_docs/openapi.yaml`](_docs/openapi.yaml).
 
 ### Backend tests
 
@@ -35,6 +35,8 @@ The API is served at http://localhost:8000, with all endpoints under `/api` (e.g
 cd backend
 uv run pytest
 ```
+
+Tests run against a temporary SQLite database, so they never touch `kanbanana.db`.
 
 ### Frontend
 

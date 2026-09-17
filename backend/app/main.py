@@ -1,10 +1,20 @@
+from contextlib import asynccontextmanager
+
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.database import init_db
 from app.models import Card, CardCreate, CardUpdate
 from app.storage import store
 
-app = FastAPI(title="Kanbanana API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+
+app = FastAPI(title="Kanbanana API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
