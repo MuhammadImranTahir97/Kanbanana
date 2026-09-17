@@ -1,114 +1,43 @@
-// Every backend call lives in this file. Right now it's backed by in-memory
-// mock data so the app works without a server. When the real backend exists,
-// swap the bodies of these functions for `fetch` calls to API_URL and the
-// rest of the app won't need to change.
+// Every backend call lives in this file.
 
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
-const MOCK_DELAY_MS = 300
-
-const STATUSES = ['todo', 'in_progress', 'done']
-
-let nextId = 4
-let cards = [
-  {
-    id: 1,
-    title: 'Set up the project',
-    description: 'Scaffold the frontend and backend folders.',
-    status: 'done',
-    created_at: '2026-09-14T09:00:00.000Z',
-  },
-  {
-    id: 2,
-    title: 'Design the board layout',
-    description: 'Three columns: To Do, In Progress, Done.',
-    status: 'in_progress',
-    created_at: '2026-09-15T10:30:00.000Z',
-  },
-  {
-    id: 3,
-    title: 'Write the product spec',
-    description: '',
-    status: 'todo',
-    created_at: '2026-09-16T12:00:00.000Z',
-  },
-]
-
-function delay() {
-  return new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS))
-}
-
-function clone(card) {
-  return { ...card }
-}
-
-function validateCardInput({ title, description }) {
-  const trimmedTitle = (title ?? '').trim()
-  if (trimmedTitle.length === 0) {
-    return 'Title is required.'
+async function request(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  })
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`)
   }
-  if (trimmedTitle.length > 100) {
-    return 'Title must be 100 characters or less.'
+  if (response.status === 204) {
+    return null
   }
-  if (description && description.length > 1000) {
-    return 'Description must be 1000 characters or less.'
-  }
-  return null
+  return response.json()
 }
 
 export async function getCards() {
-  await delay()
-  return cards
-    .map(clone)
-    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+  return request('/cards')
 }
 
 export async function createCard({ title, description }) {
-  await delay()
-  const error = validateCardInput({ title, description })
-  if (error) {
-    throw new Error(error)
-  }
-  const card = {
-    id: nextId++,
-    title: title.trim(),
-    description: (description ?? '').trim(),
-    status: 'todo',
-    created_at: new Date().toISOString(),
-  }
-  cards.push(card)
-  return clone(card)
+  return request('/cards', {
+    method: 'POST',
+    body: JSON.stringify({ title, description }),
+  })
 }
 
 export async function updateCard(id, { title, description, status }) {
-  await delay()
-  const card = cards.find((c) => c.id === id)
-  if (!card) {
-    throw new Error('Card not found.')
-  }
-  if (title !== undefined || description !== undefined) {
-    const error = validateCardInput({
-      title: title ?? card.title,
-      description: description ?? card.description,
-    })
-    if (error) {
-      throw new Error(error)
-    }
-  }
-  if (status !== undefined && !STATUSES.includes(status)) {
-    throw new Error('Invalid status.')
-  }
-  if (title !== undefined) card.title = title.trim()
-  if (description !== undefined) card.description = description.trim()
-  if (status !== undefined) card.status = status
-  return clone(card)
+  const body = {}
+  if (title !== undefined) body.title = title
+  if (description !== undefined) body.description = description
+  if (status !== undefined) body.status = status
+  return request(`/cards/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
 }
 
 export async function deleteCard(id) {
-  await delay()
-  const index = cards.findIndex((c) => c.id === id)
-  if (index === -1) {
-    throw new Error('Card not found.')
-  }
-  cards.splice(index, 1)
+  await request(`/cards/${id}`, { method: 'DELETE' })
 }

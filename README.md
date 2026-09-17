@@ -18,6 +18,8 @@ Built for Homework 2 of the [AI Dev Tools Zoomcamp](https://github.com/DataTalks
 
 ## How to run
 
+Run the backend and frontend at the same time, each in its own terminal.
+
 ### Backend
 
 ```powershell
@@ -36,4 +38,11 @@ uv run pytest
 
 ### Frontend
 
-_Coming soon. This section will be filled in as the app is built._
+```powershell
+cd frontend
+npm run dev
+```
+
+The app is served at http://localhost:5173 and talks to the backend at http://localhost:8000/api by default. To point it at a different backend URL, set the `VITE_API_URL` environment variable before starting the dev server.
+
+Start the backend first (or make sure it's already running), then start the frontend and open http://localhost:5173 in your browser.
